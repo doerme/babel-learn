@@ -23,7 +23,7 @@ const reactBoundaryPlugin = ({ types, template }, options, dirname) => {
         return this.props.children;
       }
     }`)()
-    const wrapFunctionNode = template.statements({ plugins: ['jsx'] })(
+    const wrapFunctionNode = template.statement({ plugins: ['jsx'] })(
     `const ErrorBoundaryWrap = (Child) => {
         return (props) => (
           <ErrorBoundary>
@@ -32,10 +32,29 @@ const reactBoundaryPlugin = ({ types, template }, options, dirname) => {
         )
     }`)()
     
-    // console.log(`#wrapFunctionNode:`, wrapFunctionNode)
-    // console.log(`#warpClassNode:`, warpClassNode)
+    console.log(`#wrapFunctionNode:`, wrapFunctionNode)
+    console.log(`#warpClassNode:`, warpClassNode)
     return {
         visitor: {
+            Program(path, state){
+                // console.log(`Program !!`, path)
+                let insertAfterNode = null
+                path.node.body.forEach(item => {
+                    // console.log('##=>',item.type)
+                    if(item.type === `ImportDeclaration`) {
+                        insertAfterNode = item
+                    }
+                })
+                // console.log(`insertAfterNode`, [warpClassNode,wrapFunctionNode])
+                // insertAfterNode.insertAfter([warpClassNode,wrapFunctionNode])
+                insertAfterNode.needInsertAfter = true
+            },
+            ImportDeclaration(path, state){
+                console.log(`ImportDeclaration`, path.node)
+                if(path.node.needInsertAfter){
+                    path.insertAfter([warpClassNode,wrapFunctionNode])
+                }
+            },
             ExportNamedDeclaration(path, state) {
                 // 处理 export {Hello1, ...}
                 // ==>
@@ -48,7 +67,7 @@ const reactBoundaryPlugin = ({ types, template }, options, dirname) => {
                 // ==>
                 // const Hello1ErrorBoundary = ErrorBoundaryWrap(Hello1)
                 // export {Hello1ErrorBoundary as Hello1, ...}
-                console.log(`#path parent:`, path.parent)
+                // console.log(`#path parent:`, path.parent)
                 if(path.parent && path.parent.type === 'ExportNamedDeclaration' && !path.parent.isdeal){
                     // const replaceNode = types.arrayExpression([newNode, path.node]);
                     const replaceNodeList = []
@@ -57,7 +76,7 @@ const reactBoundaryPlugin = ({ types, template }, options, dirname) => {
                     let adot = ``
                     parentNode.specifiers.forEach(element => {
                         const componentName = element.local.name;
-                        console.log(`element.local.name:`,componentName)
+                        // console.log(`element.local.name:`,componentName)
                         replaceNodeList.push(template.statement(`const ${componentName}ErrorBoundary = ErrorBoundaryWrap(${componentName})`)())
                         replaceNodeString +=` ${adot} ${componentName}ErrorBoundary as ${componentName}`
                         adot = `,`
