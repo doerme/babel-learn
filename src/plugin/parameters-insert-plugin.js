@@ -4,13 +4,16 @@ const parametersInsertPlugin = ({ types, template }, options, dirname) => {
     return {
         visitor: {
             CallExpression(path, state) {
+                // console.log(`CallExpression path state`, path, state)
                 if (path.node.isNew) {
                     return;
                 }
                 const calleeName = path.get('callee').toString();
+                console.log(`calleeName`, calleeName)
+                console.log(`targetCalleeName`, targetCalleeName)
                  if (targetCalleeName.includes(calleeName)) {
                     const { line, column } = path.node.loc.start;
-                    console.log(state.file)
+                    console.log('###2:',line, column)
                     const newNode = template.expression(`console.log("${state.file.opts.filename || 'unkown filename'}: (${line}, ${column})")`)();
                     newNode.isNew = true;
 
