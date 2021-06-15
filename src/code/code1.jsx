@@ -49,6 +49,8 @@ const Hello6 = () => {
 
 export {Hello1, Hello2}
 
-export default  {
-  Hello5, Hello6
-}
+// export default  {
+//   Hello5, Hello6
+// }
+
+export default Hello1

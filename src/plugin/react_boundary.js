@@ -32,8 +32,8 @@ const reactBoundaryPlugin = ({ types, template }, options, dirname) => {
         )
     }`)()
     
-    console.log(`#wrapFunctionNode:`, wrapFunctionNode)
-    console.log(`#warpClassNode:`, warpClassNode)
+    // console.log(`#wrapFunctionNode:`, wrapFunctionNode)
+    // console.log(`#warpClassNode:`, warpClassNode)
     return {
         visitor: {
             Program(path, state){
@@ -50,23 +50,18 @@ const reactBoundaryPlugin = ({ types, template }, options, dirname) => {
                 insertAfterNode.needInsertAfter = true
             },
             ImportDeclaration(path, state){
-                console.log(`ImportDeclaration`, path.node)
+                // console.log(`ImportDeclaration`, path.node)
                 if(path.node.needInsertAfter){
                     path.insertAfter([warpClassNode,wrapFunctionNode])
                 }
             },
-            ExportNamedDeclaration(path, state) {
-                // 处理 export {Hello1, ...}
-                // ==>
-                // const Hello1ErrorBoundary = ErrorBoundaryWrap(Hello1)
-                // export {Hello1ErrorBoundary as Hello1, ...}
-                
+            ArrowFunctionExpression(path, state) {
+                if(path.parent.type==='VariableDeclarator' && path.parentPath.parent.type==='VariableDeclaration' && path.parentPath.parentPath.parent.type==='ExportNamedDeclaration'){
+                  // console.log(`## VariableDeclarator`, path.toString())
+                  path.replaceWith(template.expression({ plugins: ['jsx'] })(`ErrorBoundaryWrap(${path.toString()})`)())
+                }
             },
             ExportSpecifier(path, state) {
-                // 处理 export {Hello1, ...}
-                // ==>
-                // const Hello1ErrorBoundary = ErrorBoundaryWrap(Hello1)
-                // export {Hello1ErrorBoundary as Hello1, ...}
                 // console.log(`#path parent:`, path.parent)
                 if(path.parent && path.parent.type === 'ExportNamedDeclaration' && !path.parent.isdeal){
                     // const replaceNode = types.arrayExpression([newNode, path.node]);
@@ -91,6 +86,27 @@ const reactBoundaryPlugin = ({ types, template }, options, dirname) => {
             },
             ExportDefaultDeclaration(path, state) {
                 // console.log('ExportDefaultDeclaration path, state', path, state)
+                // console.log(`##ExportDefaultDeclaration`,path.node)
+                if(path?.node?.declaration?.properties && !path?.node?.isdeal){
+                  let replaceNodeString = `export default {`
+                  let adot = ``
+                  path.node.declaration.properties.forEach(item=>{
+                    // console.log(`##=>`,item.value.name)
+                    if(item?.value?.name){
+                      replaceNodeString += ` ${adot} ${item.value.name}: ErrorBoundary(${item.value.name})`
+                      adot = `,`
+                    }
+                  })
+                  replaceNodeString += '}'
+                  const newNode = template.statement(replaceNodeString)()
+                  newNode.isdeal = true
+                  // console.log(`newNode`, newNode)
+                  path.replaceWithMultiple([newNode])
+                } else if(path?.node?.declaration?.type === 'Identifier'){
+                  path.replaceWith(template.statement(`export default ErrorBoundaryWrap(${path?.node?.declaration?.name})`)())
+                }
+
+                // if()
             },
         }
     }
