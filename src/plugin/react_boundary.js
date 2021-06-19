@@ -35,6 +35,10 @@ const reactBoundaryPlugin = ({ types, template }, options, dirname) => {
     // console.log(`#wrapFunctionNode:`, wrapFunctionNode)
     // console.log(`#warpClassNode:`, warpClassNode)
     return {
+        manipulateOptions(opts, parserOpts){
+          console.log(`manipulateOptions`, opts, parserOpts)
+          parserOpts.plugins.push('typescript')
+        },
         visitor: {
             Program(path, state){
                 // console.log(`Program !!`, path)
