@@ -31,6 +31,10 @@ const reactBoundaryPlugin = ({ types, template }, options, dirname) => {
           </ErrorBoundary>
         )
     }`)()
+
+    const wrapImportErrorBoundary = template.statement(`
+      import {ErrorBoundary, ErrorBoundaryWrap} from '@efox/emp-react_error_boundary'
+    `)()
     
     // console.log(`#wrapFunctionNode:`, wrapFunctionNode)
     // console.log(`#warpClassNode:`, warpClassNode)
@@ -49,14 +53,13 @@ const reactBoundaryPlugin = ({ types, template }, options, dirname) => {
                         insertAfterNode = item
                     }
                 })
-                // console.log(`insertAfterNode`, [warpClassNode,wrapFunctionNode])
-                // insertAfterNode.insertAfter([warpClassNode,wrapFunctionNode])
                 insertAfterNode.needInsertAfter = true
             },
             ImportDeclaration(path, state){
                 // console.log(`ImportDeclaration`, path.node)
                 if(path.node.needInsertAfter){
-                    path.insertAfter([warpClassNode,wrapFunctionNode])
+                    // path.insertAfter([warpClassNode,wrapFunctionNode])
+                    path.insertAfter([wrapImportErrorBoundary])
                 }
             },
             ArrowFunctionExpression(path, state) {

@@ -6,7 +6,6 @@ const Hello1 = () => {
     </>
   )
 }
-
 const Hello2 = () => {
   return (
     <>
@@ -14,7 +13,6 @@ const Hello2 = () => {
     </>
   )
 }
-
 export const Hello3 = () => {
   return (
     <>
@@ -22,15 +20,6 @@ export const Hello3 = () => {
     </>
   )
 }
-
-export const Hello4 = () => {
-  return (
-    <>
-      <h1>Hello4 is here</h1>
-    </>
-  )
-}
-
 const Hello5 = () => {
   return (
     <>
@@ -38,7 +27,6 @@ const Hello5 = () => {
     </>
   )
 }
-
 const Hello6 = () => {
   return (
     <>
@@ -46,11 +34,8 @@ const Hello6 = () => {
     </>
   )
 }
-
 export {Hello1, Hello2}
-
 // export default  {
 //   Hello5, Hello6
 // }
-
 export default Hello1
