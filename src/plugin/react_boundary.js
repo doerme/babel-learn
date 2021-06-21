@@ -112,8 +112,6 @@ const reactBoundaryPlugin = ({ types, template }, options, dirname) => {
                 } else if(path?.node?.declaration?.type === 'Identifier'){
                   path.replaceWith(template.statement(`export default ErrorBoundaryWrap(${path?.node?.declaration?.name})`)())
                 }
-
-                // if()
             },
         }
     }
